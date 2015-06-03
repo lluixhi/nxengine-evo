@@ -31,10 +31,10 @@ INITFUNC(AIRoutines)
 	ONTICK(OBJ_BOSS_MISERY, ai_boss_misery);
 	ONTICK(OBJ_MISERY_PHASE, ai_misery_phase);
 	ONTICK(OBJ_MISERY_SHOT, ai_generic_angled_shot);
-	
+
 	ONTICK(OBJ_MISERY_RING, ai_misery_ring);
 	AFTERMOVE(OBJ_MISERY_RING, aftermove_misery_ring);
-	
+
 	ONTICK(OBJ_MISERY_BALL, ai_misery_ball);
 	ONTICK(OBJ_BLACK_LIGHTNING, ai_black_lightning);
 }
@@ -48,7 +48,7 @@ void ai_boss_misery(Object *o)
 	/*debug("state: %d", o->state);
 	debug("timer: %d", o->timer);
 	debug("timer2: %d", o->timer2);*/
-	
+
 	switch(o->state)
 	{
 		// fight begin and default/base state
@@ -56,7 +56,7 @@ void ai_boss_misery(Object *o)
 		{
 			o->flags |= FLAG_SHOOTABLE;
 			o->savedhp = o->hp;
-			
+
 			o->timer = 0;
 			o->frame = 0;
 			o->xinertia = 0;
@@ -65,10 +65,10 @@ void ai_boss_misery(Object *o)
 		case STATE_FIGHTING+1:
 		{
 			FACEPLAYER;
-			
+
 			o->yinertia += (o->y < o->ymark) ? 0x20 : -0x20;
 			LIMITY(0x200);
-			
+
 			if (++o->timer > 200 || (o->hp - o->savedhp) >= 80)
 			{
 				o->state = STATE_FLASH_FOR_SPELL;
@@ -77,13 +77,13 @@ void ai_boss_misery(Object *o)
 		}
 		break;
 	}
-	
+
 	run_spells(o);
 	run_teleport(o);
-	
+
 	run_intro(o);
 	run_defeated(o);
-	
+
 	LIMITX(0x200);
 	LIMITY(0x400);
 }
@@ -101,7 +101,7 @@ static void run_spells(Object *o)
 			o->flags &= ~FLAG_SHOOTABLE;
 			o->xinertia = 0;
 			o->yinertia = 0;
-			
+
 			o->timer = 0;
 			o->state++;
 		}
@@ -109,13 +109,13 @@ static void run_spells(Object *o)
 		{
 			o->timer++;
 			o->frame = 5 + (o->timer & 1);
-			
+
 			if (o->timer > 30)
 			{
 				o->timer = 0;
 				o->frame = 4;
-				
-				if (++o->timer >= 3)
+
+				if (++o->timer2 >= 3)
 				{
 					o->state = STATE_SUMMON_BLOCK;
 					o->timer2 = 0;
@@ -127,7 +127,7 @@ static void run_spells(Object *o)
 			}
 		}
 		break;
-		
+
 		// fire black shots at player
 		case STATE_FIRE_SHOTS:
 		{
@@ -136,7 +136,7 @@ static void run_spells(Object *o)
 				EmFireAngledShot(o, OBJ_MISERY_SHOT, 4, 0x800);
 				sound(SND_FIREBALL);
 			}
-			
+
 			if (o->timer > 30)
 			{
 				o->timer = 0;
@@ -144,7 +144,7 @@ static void run_spells(Object *o)
 			}
 		}
 		break;
-		
+
 		// summon falling block
 		case STATE_SUMMON_BLOCK:
 		{
@@ -156,7 +156,7 @@ static void run_spells(Object *o)
 				o->sprite = SPR_BALCONY_BLOCK_LARGE;
 				o->dir = DOWN;	// tell block it was spawned by Misery
 			}
-			
+
 			if (o->timer > 30)
 			{
 				o->state = STATE_TP_AWAY;
@@ -164,13 +164,13 @@ static void run_spells(Object *o)
 			}
 		}
 		break;
-		
+
 		// summon black balls
 		case STATE_SUMMON_BALLS:
 		{
 			FACEPLAYER;
 			o->frame = 4;
-			
+
 			o->timer = 0;
 			o->state++;
 		}
@@ -178,13 +178,13 @@ static void run_spells(Object *o)
 		{
 			o->yinertia += (o->y < o->ymark) ? 0x20 : -0x20;
 			LIMITY(0x200);
-			
+
 			if ((++o->timer % 24) == 0)
 			{
 				CreateObject(o->x, o->y+(4<<CSF), OBJ_MISERY_BALL);
 				sound(SND_FIREBALL);
 			}
-			
+
 			if (o->timer > 72)
 			{
 				o->state = 100;
@@ -208,16 +208,16 @@ static void run_teleport(Object *o)
 			o->timer = 0;
 			o->invisible = true;
 			o->flags &= ~FLAG_SHOOTABLE;
-			
+
 			CreateObject(o->x, o->y, OBJ_MISERY_PHASE)->dir = LEFT;
 			CreateObject(o->x, o->y, OBJ_MISERY_PHASE)->dir = RIGHT;
-			
+
 			sound(SND_TELEPORT);
 		}
 		case STATE_TP_AWAY+1:
 		{
 			o->timer++;
-			
+
 			// it takes exactly 8 frames for the phase-in animation to complete
 			if (o->timer == 42)
 			{
@@ -226,7 +226,7 @@ static void run_teleport(Object *o)
 				// which gives away our position.
 				o->xmark = (random(9, 31) * TILE_W) << CSF;
 				o->ymark = (random(5, 7) * TILE_H) << CSF;
-				
+
 				CreateObject(o->xmark + 0x2000, o->ymark, OBJ_MISERY_PHASE)->dir = LEFT;
 				CreateObject(o->xmark - 0x2000, o->ymark, OBJ_MISERY_PHASE)->dir = RIGHT;
 			}
@@ -237,23 +237,23 @@ static void run_teleport(Object *o)
 				o->invisible = false;
 				o->frame = 0;
 				o->dir = LEFT;
-				
+
 				o->x = o->xmark;
 				o->y = o->ymark;
-				
+
 				// spawn rings
 				if (o->hp < 340)
 				{
 					CreateRing(o, 0x00);
 					CreateRing(o, 0x80);
-					
+
 					if (o->hp < 180)
 					{
 						CreateRing(o, 0x40);
 						CreateRing(o, 0xC0);
 					}
 				}
-				
+
 				// after tp we can summon the black balls if the player
 				// is far enough away from us that they won't immediately trigger
 				if (abs(player->x - o->x) > 112<<CSF)
@@ -264,7 +264,7 @@ static void run_teleport(Object *o)
 				{
 					o->state = STATE_FIGHTING;
 				}
-				
+
 				// setup sinusoidal hover, both of those possible states
 				// are in-air states that do it.
 				o->timer = 0;
@@ -289,10 +289,10 @@ static void run_intro(Object *o)
 			// fixes her position on throne; don't use a spawn point or it'll
 			// glitch when she turns to misery_stand in defeated cinematic
 			o->y += (6 << CSF);
-			
+
 			// her initial target height when fight begins
 			o->ymark = (64 << CSF);
-			
+
 			o->state = 1;
 		}
 		case 1:
@@ -301,11 +301,11 @@ static void run_intro(Object *o)
 			randblink(o);
 		}
 		break;
-		
+
 		case 20:		// fall from throne (script-triggered)
 		{
 			o->yinertia += 0x40;
-			
+
 			if (o->blockd)
 			{
 				o->state = 21;
@@ -335,10 +335,10 @@ static void run_defeated(Object *o)
 			o->flags &= ~FLAG_SHOOTABLE;
 			KillObjectsOfType(OBJ_MISERY_RING);
 			SmokeClouds(o, 3, 2, 2);
-			
+
 			o->xinertia = 0;
 			o->yinertia = 0;
-			
+
 			o->state = 1001;
 			o->timer = 0;
 			o->frame = 4;
@@ -351,7 +351,7 @@ static void run_defeated(Object *o)
 				o->x += (1 << CSF);
 		}
 		break;
-		
+
 		case 1010:		// fall to ground and do defeated frame: "ergh"
 		{
 			o->yinertia += 10;
@@ -377,7 +377,7 @@ Object *ring;
 	ring = CreateObject(0, 0, OBJ_MISERY_RING);
 	ring->angle = angle;
 	ring->linkedobject = o;
-	
+
 	return ring;
 }
 
@@ -389,7 +389,7 @@ void ai_misery_ring(Object *o)
 		o->Delete();
 		return;
 	}
-	
+
 	switch(o->state)
 	{
 		case 0:
@@ -402,7 +402,7 @@ void ai_misery_ring(Object *o)
 			// distance from misery
 			if (o->timer < 192)
 				o->timer++;
-			
+
 			// turn to bats when misery teleports
 			if (o->linkedobject->state >= STATE_TP_AWAY && \
 				o->linkedobject->state < STATE_TP_AWAY+10)
@@ -411,22 +411,22 @@ void ai_misery_ring(Object *o)
 			}
 		}
 		break;
-		
+
 		case 10:	// transform to bat
 		{
 			o->flags |= FLAG_SHOOTABLE;
 			o->flags &= ~FLAG_INVULNERABLE;
-			
+
 			ThrowObjectAtPlayer(o, 3, 0x200);
 			FACEPLAYER;
-			
+
 			o->sprite = SPR_ORANGE_BAT_FINAL;
 			o->state = 11;
 		}
 		case 11:
 		{
 			ANIMATE(4, 0, 2);
-			
+
 			if ((o->dir == LEFT && o->blockl) || \
 				(o->dir == RIGHT && o->blockr) || \
 				o->blocku || o->blockd)
@@ -444,7 +444,7 @@ void aftermove_misery_ring(Object *o)
 	if (o->state == 1 && o->linkedobject)
 	{
 		o->angle += 2;
-		
+
 		int dist = (o->timer << CSF) / 4;
 		o->x = o->linkedobject->x + xinertia_from_angle(o->angle, dist);
 		o->y = o->linkedobject->y + yinertia_from_angle(o->angle, dist);
@@ -481,12 +481,12 @@ void ai_misery_ball(Object *o)
 		case 1:
 		{
 			ANIMATE(2, 0, 1);
-			
+
 			o->xinertia += (o->x < player->x) ? 0x10 : -0x10;
 			o->yinertia += (o->y < o->ymark) ? 0x20 : -0x20;
 			LIMITX(0x200);
 			LIMITY(0x200);
-			
+
 			if (pdistlx(8<<CSF) && player->y > o->y)
 			{
 				o->state = 10;
@@ -494,7 +494,7 @@ void ai_misery_ball(Object *o)
 			}
 		}
 		break;
-		
+
 		case 10:	// black lightning
 		{
 			if (++o->timer > 10)
@@ -503,7 +503,7 @@ void ai_misery_ball(Object *o)
 				CreateObject(o->x, o->y, OBJ_BLACK_LIGHTNING);
 				o->Delete();
 			}
-			
+
 			o->frame = (o->timer & 2) ? 2 : 1;
 		}
 		break;
@@ -514,7 +514,7 @@ void ai_black_lightning(Object *o)
 {
 	ANIMATE(0, 0, 1);
 	o->yinertia = 0x1000;
-	
+
 	if (o->blockd)
 	{
 		effect(o->CenterX(), o->Bottom(), EFFECT_BOOMFLASH);

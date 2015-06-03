@@ -48,7 +48,7 @@ char fname[MAXPATHLEN];
 
 	stat(" >> Entering stage %d: '%s'.", stage_no, stages[stage_no].stagename);
 	game.curmap = stage_no;		// do it now so onspawn events will have it
-	
+
 	if (use_palette)
 	{
 		Sprites::FlushSheets();
@@ -57,27 +57,27 @@ char fname[MAXPATHLEN];
 
 	if (Tileset::Load(stages[stage_no].tileset))
 		return 1;
-	
+
 	// get the base name of the stage without extension
 	const char *mapname = stages[stage_no].filename;
 	if (!strcmp(mapname, "lounge")) mapname = "Lounge";
 	sprintf(stage, "%s/%s", stage_dir, mapname);
-	
+
 	sprintf(fname, "%s.pxm", stage);
 	if (load_map(fname)) return 1;
-	
+
 	sprintf(fname, "%s/%s.pxa", stage_dir, tileset_names[stages[stage_no].tileset]);
 	if (load_tileattr(fname)) return 1;
-	
+
 	sprintf(fname, "%s.pxe", stage);
 	if (load_entities(fname)) return 1;
-	
+
 	sprintf(fname, "%s.tsc", stage);
 	if (tsc_load(fname, SP_MAP) == 1) return 1;
 	map_set_backdrop(stages[stage_no].bg_no);
 	map.scrolltype = stages[stage_no].scroll_type;
 	map.motionpos = 0;
-	
+
 	return 0;
 }
 
@@ -97,19 +97,19 @@ int x, y;
 		staterr("load_map: no such file: '%s'", fname);
 		return 1;
 	}
-	
+
 	if (!fverifystring(fp, "PXM"))
 	{
 		staterr("load_map: invalid map format: '%s'", fname);
 		return 1;
 	}
-	
+
 	memset(&map, 0, sizeof(map));
-	
+
 	fgetc(fp);
 	map.xsize = fgeti(fp);
 	map.ysize = fgeti(fp);
-	
+
 	if (map.xsize > MAP_MAXSIZEX || map.ysize > MAP_MAXSIZEY)
 	{
 		staterr("load_map: map is too large -- size %dx%d but max is %dx%d", map.xsize, map.ysize, MAP_MAXSIZEX, MAP_MAXSIZEY);
@@ -120,15 +120,15 @@ int x, y;
 	{
 		stat("load_map: level size %dx%d", map.xsize, map.ysize);
 	}
-	
+
 	for(y=0;y<map.ysize;y++)
 	for(x=0;x<map.xsize;x++)
 	{
 		map.tiles[x][y] = fgetc(fp);
 	}
-	
+
 	fclose(fp);
-	
+
 	if (widescreen)
 	{
         if (map.xsize * TILE_W<SCREEN_WIDTH && map.ysize * TILE_W<SCREEN_HEIGHT) {
@@ -155,7 +155,7 @@ int x, y;
     	map.maxxscroll = (((map.xsize * TILE_W) - SCREEN_WIDTH) - 8) << CSF;
     	map.maxyscroll = (((map.ysize * TILE_H) - SCREEN_HEIGHT) - 8) << CSF;
 	}
-	
+
 	stat("load_map: '%s' loaded OK! - %dx%d", fname, map.xsize, map.ysize);
 	return 0;
 }
@@ -171,7 +171,7 @@ int nEntities;
 	// gotta destroy all objects before creating new ones
 	Objects::DestroyAll(false);
 	FloatText::ResetAll();
-	
+
 	stat("load_entities: reading in %s", fname);
 	// now we can load in the new objects
 	fp = fopen(fname, "rb");
@@ -180,16 +180,16 @@ int nEntities;
 		staterr("load_entities: no such file: '%s'", fname);
 		return 1;
 	}
-	
+
 	if (!fverifystring(fp, "PXE"))
 	{
 		staterr("load_entities: not a PXE: '%s'", fname);
 		return 1;
 	}
-	
+
 	fgetc(fp);
 	nEntities = fgetl(fp);
-	
+
 	for(i=0;i<nEntities;i++)
 	{
 		int x = fgeti(fp);
@@ -198,17 +198,17 @@ int nEntities;
 		int id2 = fgeti(fp);
 		int type = fgeti(fp);
 		int flags = fgeti(fp);
-		
+
 		int dir = (flags & FLAG_FACES_RIGHT) ? RIGHT : LEFT;
-		
+
 		//lprintf(" %d:   [%d, %d]\t id1=%d\t id2=%d   Type %d   flags %04x\n", i, x, y, id1, id2, type, flags);
-		
+
 		// most maps have apparently garbage entities--invisible do-nothing objects??
 		// i dunno but no point in spawning those...
 		if (type || id1 || id2 || flags)
 		{
 			bool addobject = false;
-			
+
 			// check if object is dependent on a flag being set/not set
 			if (flags & FLAG_APPEAR_ON_FLAGID)
 			{
@@ -233,24 +233,24 @@ int nEntities;
 			{
 				addobject = true;
 			}
-			
+
 			if (addobject)
 			{
 				// hack for chests (can we do this elsewhere?)
 				if (type == OBJ_CHEST_OPEN) y++;
 				// hack for skydragon in Fall end cinematic
 				if (type == OBJ_SKY_DRAGON && id2 == 230) y++;
-				
+
 				Object *o = CreateObject((x * TILE_W) << CSF, \
 										 (y * TILE_H) << CSF, type,
 										 0, 0, dir, NULL, CF_NO_SPAWN_EVENT);
-				
+
 				o->id1 = id1;
 				o->id2 = id2;
 				o->flags |= flags;
-				
+
 				ID2Lookup[o->id2] = o;
-				
+
 				// now that it's all set up, execute OnSpawn,
 				// since we didn't do it in CreateObject.
 				o->OnSpawn();
@@ -263,9 +263,9 @@ int nEntities;
 				    o->id1 = id1;
 				    o->id2 = id2;
 				    o->flags |= flags;
-				
+
 				    ID2Lookup[o->id2] = o;
-				
+
 				    // now that it's all set up, execute OnSpawn,
 				    // since we didn't do it in CreateObject.
 				    o->OnSpawn();
@@ -274,7 +274,7 @@ int nEntities;
 			}
 		}
 	}
-	
+
 	//stat("load_entities: loaded %d objects", nEntities);
 	fclose(fp);
 	return 0;
@@ -303,7 +303,7 @@ int i;
 unsigned char tc;
 
 	map.nmotiontiles = 0;
-	
+
 	stat("load_pxa: reading in %s", fname);
 	fp = fopen(fname, "rb");
 	if (!fp)
@@ -311,31 +311,31 @@ unsigned char tc;
 		staterr("load_pxa: no such file: '%s'", fname);
 		return 1;
 	}
-	
+
 	for(i=0;i<256;i++)
 	{
 		tc = fgetc(fp);
 		tilecode[i] = tc;
 		tileattr[i] = tilekey[tc];
 		//stat("Tile %02x   TC %02x    Attr %08x   tilekey[%02x] = %08x", i, tc, tileattr[i], tc, tilekey[tc]);
-		
+
 		if (tc == 0x43)	// destroyable block - have to replace graphics
 		{
 			CopySpriteToTile(SPR_DESTROYABLE, i, 0, 0);
 		}
-		
+
 		// add water currents to animation list
 		if (tileattr[i] & TA_CURRENT)
 		{
 			map.motiontiles[map.nmotiontiles].tileno = i;
 			map.motiontiles[map.nmotiontiles].dir = CVTDir(tc & 3);
 			map.motiontiles[map.nmotiontiles].sprite = SPR_WATER_CURRENT;
-			
+
 			map.nmotiontiles++;
 			stat("Added tile %02x to animation list, tc=%02x", i, tc);
 		}
 	}
-	
+
 	fclose(fp);
 	return 0;
 }
@@ -351,16 +351,16 @@ FILE *fp;
 		num_stages = 0;
 		return 1;
 	}
-	
+
 	num_stages = fgetc(fp);
 	for(int i=0;i<num_stages;i++)
 		fread(&stages[i], sizeof(MapRecord), 1, fp);
-		
+
 	//hack to show nice backdrop in menu, like nicalis
 	stages[0].bg_no=9;
 	//hack to not show ballos in e_Blcn
 	stages[93].bossNo = 0;
-	
+
 	return 0;
 }
 
@@ -376,10 +376,10 @@ int i;
 		staterr("tilekey.dat is missing!");
 		return 1;
 	}
-	
+
 	for(i=0;i<256;i++)
 		tilekey[i] = fgetl(fp);
-	
+
 	fclose(fp);
 	return load_stages();
 }
@@ -411,19 +411,19 @@ int x, y;
 		if (!backdrop[map.backdrop])
 			return;
 	}
-	
+
 	switch(map.scrolltype)
 	{
 		case BK_FIXED:
 			map.parscroll_x = 0;
 			map.parscroll_y = 0;
 		break;
-		
+
 		case BK_FOLLOWFG:
 			map.parscroll_x = (map.displayed_xscroll >> CSF);
 			map.parscroll_y = (map.displayed_yscroll >> CSF);
 		break;
-		
+
 		case BK_PARALLAX:
 			map.parscroll_y = (map.displayed_yscroll >> CSF) / 2;
 			map.parscroll_x = (map.displayed_xscroll >> CSF) / 2;
@@ -432,12 +432,12 @@ int x, y;
 			if (map.parscroll_x < 0 ) map.parscroll_x = map.parscroll_x * 2;
 			if (map.parscroll_y < 0 ) map.parscroll_y = map.parscroll_y * 2;
 		break;
-		
+
 		case BK_FASTLEFT:		// Ironhead
 			map.parscroll_x += 6;
 			map.parscroll_y = 0;
 		break;
-		
+
 		case BK_FASTLEFT_LAYERS:
 		case BK_FASTLEFT_LAYERS_NOFALLLEFT:
 		{
@@ -445,7 +445,7 @@ int x, y;
 			return;
 		}
 		break;
-		
+
 		case BK_HIDE:
 		case BK_HIDE2:
 		case BK_HIDE3:
@@ -456,7 +456,7 @@ int x, y;
 				ClearScreen(DK_BLUE);
 		}
 		return;
-		
+
 		default:
 			map.parscroll_x = map.parscroll_y = 0;
 			staterr("map_draw_backdrop: unhandled map scrolling type %d", map.scrolltype);
@@ -464,7 +464,7 @@ int x, y;
 	}
 	int w = backdrop[map.backdrop]->Width();
 	int h = backdrop[map.backdrop]->Height();
-	
+
 	int mapx = (map.xsize * TILE_W);
 	int mapy = (map.ysize * TILE_H);
 	// hack for ending Maze map
@@ -500,13 +500,13 @@ void DrawFastLeftLayered(void)
     }
 
     static const int move_spd[] = { 0,    1,   2,   4,   8 };
-    int nlayers = 5;
+    const int nlayers = 5;
     int y1, y2;
     int i, x;
 
 	if (--map.parscroll_x <= -(480*SCALE*2))
 		map.parscroll_x = 0;
-	
+
 	y1 = x = 0;
 	// fix for extra height
 	if (map.backdrop == 9)
@@ -516,7 +516,7 @@ void DrawFastLeftLayered(void)
 	for(i=0;i<nlayers;i++)
 	{
 		y2 = layer_ys[i];
-		
+
 		if (i)	// not the static moon layer?
 		{
 			x = (map.parscroll_x * move_spd[i]) >> 1;
@@ -559,7 +559,7 @@ char fname[MAXPATHLEN];
 		{
 		    sprintf(fname, "%s/%s.pbm", data_dir, backdrop_names[backdrop_no]);
 		}
-		
+
 		backdrop[backdrop_no] = NXSurface::FromFile(fname, use_chromakey);
 		if (!backdrop[backdrop_no])
 		{
@@ -567,7 +567,7 @@ char fname[MAXPATHLEN];
 			return 1;
 		}
 	}
-	
+
 	return 0;
 }
 
@@ -580,7 +580,7 @@ int i;
 		delete backdrop[i];
 		backdrop[i] = NULL;
 	}
-	
+
 	// re-copy star files
 	for(i=0;i<256;i++)
 	{
@@ -606,19 +606,19 @@ int water_x, water_y;
 
 	if (!map.waterlevelobject)
 		return;
-	
+
 	water_x = -(map.displayed_xscroll >> CSF);
 	water_x %= SCREEN_WIDTH;
-	
+
 	water_y = (map.waterlevelobject->y >> CSF) - (map.displayed_yscroll >> CSF);
-	
+
 	// draw the surface and just under the surface
 	BlitPatternAcross(backdrop[map.backdrop], water_x, water_y, 0, 16);
 	water_y += 16;
-	
+
 	BlitPatternAcross(backdrop[map.backdrop], water_x, water_y, 32, 16);
 	water_y += 16;
-	
+
 	// draw the rest of the pattern all the way down
 	while(water_y < (SCREEN_HEIGHT-1))
 	{
@@ -637,22 +637,22 @@ int x, y;
 int mapx, mapy;
 int blit_x, blit_y, blit_x_start;
 int scroll_x, scroll_y;
-	
+
 	scroll_x = (map.displayed_xscroll >> CSF);
 	scroll_y = (map.displayed_yscroll >> CSF);
-	
+
 	mapx = (scroll_x / TILE_W);
 	mapy = (scroll_y / TILE_H);
-	
+
 	blit_y = -(scroll_y % TILE_H);
 	blit_x_start = -(scroll_x % TILE_W);
-	
+
 	// MAP_DRAW_EXTRA_Y etc is 1 if resolution is changed to
 	// something not a multiple of TILE_H.
 	for(y=0; y <= (SCREEN_HEIGHT / TILE_H)+MAP_DRAW_EXTRA_Y; y++)
 	{
 		blit_x = blit_x_start;
-		
+
 		for(x=0; x <= (SCREEN_WIDTH / TILE_W)+MAP_DRAW_EXTRA_X; x++)
 		{
 			if ( ((mapx+x) >= 0 ) && ((mapy+y) >= 0 ) && ((mapx+x) < map.xsize ) && ((mapy+y) < map.ysize ))
@@ -669,7 +669,7 @@ int scroll_x, scroll_y;
 			}
 			blit_x += TILE_W;
 		}
-		
+
 		blit_y += TILE_H;
 	}
 }
@@ -683,12 +683,12 @@ void c------------------------------() {}
 void scroll_normal(void)
 {
 const int scroll_adj_rate = (0x2000 / map.scrollspeed);
-	
+
 	// how many pixels to let player stray from the center of the screen
 	// before we start scrolling. high numbers let him reach closer to the edges,
 	// low numbers keep him real close to the center.
 	#define P_VARY_FROM_CENTER			(64 << CSF)
-	
+
 	if (player->dir == LEFT)
 	{
 		map.scrollcenter_x -= scroll_adj_rate;
@@ -701,10 +701,10 @@ const int scroll_adj_rate = (0x2000 / map.scrollspeed);
 		if (map.scrollcenter_x > P_VARY_FROM_CENTER)
 			map.scrollcenter_x = P_VARY_FROM_CENTER;
 	}
-	
+
 	// compute where the map "wants" to be
 	map.target_x = (player->CenterX() + map.scrollcenter_x) - ((SCREEN_WIDTH / 2) << CSF);
-	
+
 	// Y scrolling
 	if (player->lookscroll == UP)
 	{
@@ -727,14 +727,14 @@ const int scroll_adj_rate = (0x2000 / map.scrollspeed);
 			map.scrollcenter_y -= scroll_adj_rate;
 		}
 	}
-	
+
 	map.target_y = (player->CenterY() + map.scrollcenter_y) - ((SCREEN_HEIGHT / 2) << CSF);
 }
 
 void map_scroll_do(void)
 {
 	bool doing_normal_scroll = false;
-	
+
 	if (!map.scroll_locked)
 	{
 		if (map.focus.has_target)
@@ -745,7 +745,7 @@ void map_scroll_do(void)
 			if (map.focus.target)
 			{
 				Object *t = map.focus.target;
-				
+
 				// Generally we want to focus on the center of the object, not it's UL corner.
 				// But a few objects (Cage in mimiga village) have offset drawpoints
 				// that affect the positioning of the scene. If the object has a drawpoint,
@@ -768,19 +768,19 @@ void map_scroll_do(void)
 			if (!player->hide)
 			{
 				scroll_normal();
-				
+
 				if (!inputs[DEBUG_MOVE_KEY] || !settings->enable_debug_keys)
 					doing_normal_scroll = true;
 			}
 		}
 	}
-	
+
 	map.real_xscroll += (map.target_x - map.real_xscroll) / map.scrollspeed;
 	map.real_yscroll += (map.target_y - map.real_yscroll) / map.scrollspeed;
-	
+
 	map.displayed_xscroll = (map.real_xscroll + map.phase_adj);
 	map.displayed_yscroll = map.real_yscroll;	// we don't compensate on Y, because player falls > 2 pixels per frame
-	
+
 	if (doing_normal_scroll)
 	{
 		run_phase_compensator();
@@ -791,9 +791,9 @@ void map_scroll_do(void)
 		map.phase_adj -= MAP_PHASE_ADJ_SPEED;
 		if (map.phase_adj < 0) map.phase_adj = 0;
 	}
-	
+
 	map_sanitycheck();
-	
+
 	// do quaketime after sanity check so quake works in
 	// small levels like Shack.
 	if (game.quaketime)
@@ -801,7 +801,7 @@ void map_scroll_do(void)
 		if (!map.scroll_locked)
 		{
 			int pushx, pushy;
-			
+
 			if (game.megaquaketime)		// Ballos fight
 			{
 				game.megaquaketime--;
@@ -813,7 +813,7 @@ void map_scroll_do(void)
 				pushx = random(-1, 1) << CSF;
 				pushy = random(-1, 1) << CSF;
 			}
-			
+
 			map.real_xscroll += pushx;
 			map.real_yscroll += pushy;
 			map.displayed_xscroll += pushx;
@@ -824,16 +824,16 @@ void map_scroll_do(void)
 			// quake after IronH battle...special case cause we don't
 			// want to show the walls of the arena.
 			int pushy = random(-0x500, 0x500);
-			
+
 			map.real_yscroll += pushy;
 			if (map.real_yscroll < 0) map.real_yscroll = 0;
 			if (map.real_yscroll > (15 << CSF)) map.real_yscroll = (15 << CSF);
-			
+
 			map.displayed_yscroll += pushy;
 			if (map.displayed_yscroll < 0) map.displayed_yscroll = 0;
 			if (map.displayed_yscroll > (15 << CSF)) map.displayed_yscroll = (15 << CSF);
 		}
-		
+
 		game.quaketime--;
 	}
 }
@@ -847,12 +847,12 @@ void map_scroll_do(void)
 void run_phase_compensator(void)
 {
 	int displayed_phase_offs = (map.displayed_xscroll - player->x) % 512;
-	
+
 	if (displayed_phase_offs != 0)
 	{
 		int phase_offs = abs(map.real_xscroll - player->x) % 512;
 		//debug("%d", phase_offs);
-		
+
 		// move phase_adj towards phase_offs; phase_offs is how far
 		// out of sync we are with the player and so once we reach it
 		// we will compensating exactly.
@@ -899,7 +899,7 @@ void map_sanitycheck(void)
 	if (map.real_yscroll < MAP_BORDER_AMT) map.real_yscroll = MAP_BORDER_AMT;
 	if (map.real_xscroll > map.maxxscroll) map.real_xscroll = map.maxxscroll;
 	if (map.real_yscroll > map.maxyscroll) map.real_yscroll = map.maxyscroll;
-	
+
 	if (map.displayed_xscroll < MAP_BORDER_AMT) map.displayed_xscroll = MAP_BORDER_AMT;
 	if (map.displayed_yscroll < MAP_BORDER_AMT) map.displayed_yscroll = MAP_BORDER_AMT;
 	if (map.displayed_xscroll > map.maxxscroll) map.displayed_xscroll = map.maxxscroll;
@@ -913,11 +913,11 @@ void map_scroll_jump(int x, int y)
 	map.target_y = y - ((SCREEN_HEIGHT / 2) << CSF);
 	map.real_xscroll = map.target_x;
 	map.real_yscroll = map.target_y;
-	
+
 	map.displayed_xscroll = map.real_xscroll;
 	map.displayed_yscroll = map.real_yscroll;
 	map.phase_adj = 0;
-	
+
 	map.scrollcenter_x = map.scrollcenter_y = 0;
 	map_sanitycheck();
 }
@@ -942,7 +942,7 @@ void map_focus(Object *o, int spd)
 {
 	map.focus.target = o;
 	map.focus.has_target = (o != NULL);
-	
+
 	map.scrollspeed = spd;
 	map.scroll_locked = false;
 }
@@ -956,13 +956,13 @@ void map_ChangeTileWithSmoke(int x, int y, int newtile, int nclouds, bool boomfl
 {
 	if (x < 0 || y < 0 || x >= map.xsize || y >= map.ysize)
 		return;
-	
+
 	map.tiles[x][y] = newtile;
-	
+
 	int xa = ((x * TILE_W) + (TILE_W / 2)) << CSF;
 	int ya = ((y * TILE_H) + (TILE_H / 2)) << CSF;
 	SmokeXY(xa, ya, nclouds, TILE_W/2, TILE_H/2, push_behind);
-	
+
 	if (boomflash)
 		effect(xa, ya, EFFECT_BOOMFLASH);
 }
@@ -973,7 +973,7 @@ const char *map_get_stage_name(int mapno)
 {
 	if (mapno == STAGE_KINGS)
 		return "";//Studio Pixel Presents";
-	
+
 	return stages[mapno].stagename;
 }
 
@@ -1006,16 +1006,16 @@ int x_off, y_off;
 		{
 			case LEFT: y_off = 0; x_off = map.motionpos; break;
 			case RIGHT: y_off = 0; x_off = (TILE_W - map.motionpos); break;
-			
+
 			case UP: x_off = 0; y_off = map.motionpos; break;
 			case DOWN: x_off = 0; y_off = (TILE_H - map.motionpos); break;
-			
+
 			default: x_off = y_off = 0; break;
 		}
-		
+
 		CopySpriteToTile(map.motiontiles[i].sprite, map.motiontiles[i].tileno, x_off, y_off);
 	}
-	
+
 	map.motionpos += 2;
 	if (map.motionpos >= TILE_W) map.motionpos = 0;
 }
@@ -1025,12 +1025,12 @@ int x_off, y_off;
 Object *FindObjectByID2(int id2)
 {
 	Object *result = ID2Lookup[id2];
-	
+
 	if (result)
 		staterr("FindObjectByID2: ID2 %04d found: type %s; coords: (%d, %d)", id2, DescribeObjectType(ID2Lookup[id2]->type), ID2Lookup[id2]->x>>CSF,ID2Lookup[id2]->y>>CSF);
 	else
 		staterr("FindObjectByID2: no such object %04d", id2);
-	
+
 	return result;
 }
 

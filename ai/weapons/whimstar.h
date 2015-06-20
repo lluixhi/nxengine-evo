@@ -5,17 +5,15 @@
 
 #define MAX_WHIMSTARS			3
 
-struct Whimstar
-{
-	int x, y;
-	int xinertia, yinertia;
+struct Whimstar {
+        int x, y;
+        int xinertia, yinertia;
 };
 
-struct WhimsicalStar
-{
-	Whimstar stars[MAX_WHIMSTARS];
-	int nstars;
-	int stariter;
+struct WhimsicalStar {
+        Whimstar stars[MAX_WHIMSTARS];
+        int nstars;
+        int stariter;
 };
 
 void init_whimstar(WhimsicalStar *wh);

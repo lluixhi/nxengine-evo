@@ -8,19 +8,18 @@ static const char *filename = "Doukutsu.exe";
 
 int main(int argc, char *argv[])
 {
-    FILE *fp;
+        FILE *fp;
 
-    fp = fopen(filename, "rb");
-    if (!fp)
-    {
-        return 1;
-    }
+        fp = fopen(filename, "rb");
+        if (!fp) {
+                return 1;
+        }
 
-    if (extract_pxt(fp)) return 1;
-    if (extract_files(fp)) return 1;
-    if (extract_stages(fp)) return 1;
-    fclose(fp);
-    return 0;
+        if (extract_pxt(fp)) return 1;
+        if (extract_files(fp)) return 1;
+        if (extract_stages(fp)) return 1;
+        fclose(fp);
+        return 0;
 }
 
 

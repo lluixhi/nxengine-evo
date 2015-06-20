@@ -9,28 +9,27 @@
 // like 10 and running the fight!
 #define NUM_SISTERS			2
 
-class SistersBoss : public StageBoss
-{
+class SistersBoss : public StageBoss {
 public:
-	void OnMapEntry();
-	void OnMapExit();
-	void Run();
+        void OnMapEntry();
+        void OnMapExit();
+        void Run();
 
 private:
-	void run_head(int index);
-	void head_set_bbox(int index);
-	void run_body(int index);
-	
-	void SetHeadStates(int newstate);
-	void SetBodyStates(int newstate);
-	
-	void SpawnScreenSmoke(int count);
-	
-	int mainangle;
-	
-	Object *main;
-	Object *head[NUM_SISTERS];
-	Object *body[NUM_SISTERS];
+        void run_head(int index);
+        void head_set_bbox(int index);
+        void run_body(int index);
+
+        void SetHeadStates(int newstate);
+        void SetBodyStates(int newstate);
+
+        void SpawnScreenSmoke(int count);
+
+        int mainangle;
+
+        Object *main;
+        Object *head[NUM_SISTERS];
+        Object *body[NUM_SISTERS];
 };
 
 

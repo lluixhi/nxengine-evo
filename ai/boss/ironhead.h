@@ -4,16 +4,15 @@
 #include "../../object.h"
 #include "../../stageboss.h"
 
-class IronheadBoss : public StageBoss
-{
+class IronheadBoss : public StageBoss {
 public:
-	void OnMapEntry();
-	void OnMapExit();
-	void Run();
+        void OnMapEntry();
+        void OnMapExit();
+        void Run();
 
 private:
-	Object *o;
-	int hittimer;
+        Object *o;
+        int hittimer;
 };
 
 static void ironh_smokecloud(Object *o);

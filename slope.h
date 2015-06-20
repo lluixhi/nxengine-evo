@@ -18,9 +18,8 @@
 
 #define SLOPE_LAST			8
 
-struct SlopeTable
-{
-	uint8_t table[TILE_W][TILE_H];
+struct SlopeTable {
+        uint8_t table[TILE_W][TILE_H];
 };
 bool initslopetable(void);
 uint8_t ReadSlopeTable(int x, int y);

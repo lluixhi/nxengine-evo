@@ -3,45 +3,43 @@
 #define _INPUT_H
 #include <SDL.h>
 
-typedef struct 
-{
-    int32_t key;
-    int32_t jbut;
-    int32_t jhat;
-    int32_t jhat_value;
-    int32_t jaxis;
-    int32_t jaxis_value;
+typedef struct {
+        int32_t key;
+        int32_t jbut;
+        int32_t jhat;
+        int32_t jhat_value;
+        int32_t jaxis;
+        int32_t jaxis_value;
 } in_action;
 
-enum INPUTS
-{
-	LEFTKEY, RIGHTKEY, UPKEY, DOWNKEY,
-	JUMPKEY, FIREKEY,
-	PREVWPNKEY, NEXTWPNKEY,
-	INVENTORYKEY, MAPSYSTEMKEY,
-	
-	ESCKEY,
-	F1KEY,
-	F2KEY,
-	F3KEY,
-	F4KEY,
-	F5KEY,
-	F6KEY,
-	F7KEY,
-	F8KEY,
-	F9KEY,
-	F10KEY,
-	F11KEY,
-	F12KEY,
-	
-	FREEZE_FRAME_KEY,
-	FRAME_ADVANCE_KEY,
-	DEBUG_FLY_KEY,
-	HOMEKEY,
-	ENDKEY,
-	ENTERKEY,
-	
-	INPUT_COUNT
+enum INPUTS {
+        LEFTKEY, RIGHTKEY, UPKEY, DOWNKEY,
+        JUMPKEY, FIREKEY,
+        PREVWPNKEY, NEXTWPNKEY,
+        INVENTORYKEY, MAPSYSTEMKEY,
+
+        ESCKEY,
+        F1KEY,
+        F2KEY,
+        F3KEY,
+        F4KEY,
+        F5KEY,
+        F6KEY,
+        F7KEY,
+        F8KEY,
+        F9KEY,
+        F10KEY,
+        F11KEY,
+        F12KEY,
+
+        FREEZE_FRAME_KEY,
+        FRAME_ADVANCE_KEY,
+        DEBUG_FLY_KEY,
+        HOMEKEY,
+        ENDKEY,
+        ENTERKEY,
+
+        INPUT_COUNT
 };
 
 #define LASTCONTROLKEY		MAPSYSTEMKEY

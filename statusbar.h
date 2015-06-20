@@ -2,16 +2,14 @@
 #ifndef _STATUSBAR_H
 #define _STATUSBAR_H
 
-struct PercentBar
-{
-	int displayed_value;
-	int dectimer;
+struct PercentBar {
+        int displayed_value;
+        int dectimer;
 };
 
-struct StatusBar
-{
-	int xpflashcount;
-	int xpflashstate;
+struct StatusBar {
+        int xpflashcount;
+        int xpflashstate;
 };
 
 extern StatusBar statusbar;
